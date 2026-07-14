@@ -87,6 +87,7 @@ function _auto_notify_message() {
 
         if [[ -n "$icon" ]]; then
                 arguments+=("--icon=$icon")
+                arguments+=("--app-icon=$icon")
         fi
 
         # Check if the script is running over SSH
