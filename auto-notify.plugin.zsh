@@ -34,12 +34,25 @@ export AUTO_NOTIFY_VERSION="0.11.1"
         'nano'
     )
 
+function _auto_notify_human_time() {
+    local total="$1"
+    local h=$(( total / 3600 ))
+    local m=$(( (total % 3600) / 60 ))
+    local s=$(( total % 60 ))
+    local out=""
+    (( h > 0 )) && out+="${h}h "
+    (( m > 0 )) && out+="${m}m "
+    (( s > 0 || total == 0 )) && out+="${s}s "
+    printf "%s" "${out% }"
+}
+
 function _auto_notify_format() {
     local MESSAGE="$1"
     local command="$2"
     local elapsed="$3"
     local exit_code="$4"
     MESSAGE="${MESSAGE//\%command/$command}"
+    MESSAGE="${MESSAGE//\%elapsed_human/$(_auto_notify_human_time "$elapsed")}"
     MESSAGE="${MESSAGE//\%elapsed/$elapsed}"
     MESSAGE="${MESSAGE//\%exit_code/$exit_code}"
     printf "%s" "$MESSAGE"
@@ -52,7 +65,7 @@ function _auto_notify_message() {
     local platform="$(uname)"
     # Run using echo -e in order to make sure notify-send picks up new line
     local DEFAULT_TITLE="\"%command\" Completed"
-    local DEFAULT_BODY="$(echo -e "Total time: %elapsed seconds\nExit code: %exit_code")"
+    local DEFAULT_BODY="$(echo -e "Total time: %elapsed_human\nExit code: %exit_code")"
 
     # Exit code 130 indicates termination by SIGINT (Ctrl+C).
     # If AUTO_NOTIFY_CANCEL_ON_SIGINT is enabled, suppress the notification.
